@@ -1,0 +1,33 @@
+- hosts: all
+  gather_facts: true
+  become: yes
+  become_user: root
+
+  tasks:
+    - name: Install tcpflow package
+      package:
+        name: tcpflow
+        state: present
+
+    - name: Collect PCAP file from server
+      fetch:
+        src: /home/caberte/Desktop/hoa8.pcap
+        dest: /home/caberte/pcap/pcap_dest/
+        flat: yes
+
+- hosts: all
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Extract executable from PCAP file
+      shell: "tcpflow -r /home/caberte/pcap/pcap_dest/hoa8.pcap -o /home/caberte/pcap/pcap_out/"
+      args:
+        creates: /home/caberte/pcap/pcap_out/executable.exe
+
+    - name: Debug .exe file
+      command: "cat /home/caberte/pcap/pcap_out/report.xml"
+      register: cat_output
+      changed_when: false
+
+    - debug:
+        var: cat_output.stdout_lines
